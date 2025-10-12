@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/simulation/Sidebar";
 import { ChatArea, Message } from "@/components/simulation/ChatArea";
+import { CameraProctoring } from "@/components/simulation/CameraProctoring";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -180,9 +181,16 @@ const Simulation = () => {
       console.error('Error logging violation:', error);
     }
 
+    const violationMessages: Record<string, string> = {
+      tab_switch: "Tab switching detected",
+      camera_disabled: "Camera access is required",
+      no_face_detected: "No face detected in camera",
+      multiple_faces: "Multiple faces detected",
+    };
+
     toast({
       title: "Violation detected",
-      description: type === "tab_switch" ? "Tab switching detected" : "Proctoring violation",
+      description: violationMessages[type] || "Proctoring violation",
       variant: "destructive",
     });
   };
@@ -378,6 +386,7 @@ const Simulation = () => {
         onSubmitSimulation={handleSubmitSimulation}
         violations={violations}
       />
+      <CameraProctoring onViolation={handleViolation} />
     </div>
   );
 };
