@@ -200,12 +200,22 @@ const Simulation = () => {
     }));
 
     const progress = channelProgress[activeChannel];
+    if (!progress) {
+      console.error('No progress found for channel:', activeChannel);
+      return;
+    }
+
     const channelQuestions = scenario.questions.filter((q: Question) => q.channel === activeChannel);
     const currentQuestion = channelQuestions[progress.questionIndex];
     
+    if (!currentQuestion) {
+      console.error('No current question found');
+      return;
+    }
+    
     const questionId = progress.followUpIndex === 0 
       ? currentQuestion.id 
-      : currentQuestion.followUps[progress.followUpIndex - 1].id;
+      : currentQuestion.followUps?.[progress.followUpIndex - 1]?.id;
 
     try {
       await supabase.from('simulation_responses').insert({
@@ -215,7 +225,7 @@ const Simulation = () => {
       });
 
       // Move to next follow-up or question
-      if (progress.followUpIndex < currentQuestion.followUps.length) {
+      if (currentQuestion.followUps && progress.followUpIndex < currentQuestion.followUps.length) {
         const followUp = currentQuestion.followUps[progress.followUpIndex];
         setTimeout(() => {
           const followUpMessage: Message = {
