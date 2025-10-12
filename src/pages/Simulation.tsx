@@ -248,34 +248,33 @@ const Simulation = () => {
           }));
         }, 1000);
       } else if (progress.questionIndex < channelQuestions.length - 1) {
-        // Add interstitial dialogue before next question if available
-        const interstitialDialogue = currentQuestion.interstitialDialogue || [];
-        
-        if (interstitialDialogue.length > 0) {
-          // Show interstitial dialogue first
-          let cumulativeDelay = 1000;
-          interstitialDialogue.forEach((dialogue, idx) => {
+        // Move to next question with context dialogue
+        setTimeout(() => {
+          const nextQuestion = channelQuestions[progress.questionIndex + 1];
+          
+          // Add context messages from team members first
+          let cumulativeDelay = 0;
+          nextQuestion.context.forEach((ctx, idx) => {
             setTimeout(() => {
-              const dialogueMessage: Message = {
-                id: `${activeChannel}-interstitial-${progress.questionIndex}-${idx}`,
+              const contextMessage: Message = {
+                id: `${activeChannel}-context-${progress.questionIndex + 1}-${idx}`,
                 role: "agent",
-                author: dialogue.agent,
-                content: dialogue.message,
+                author: ctx.agent,
+                content: ctx.message,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               };
               
               setChannelMessages(prev => ({
                 ...prev,
-                [activeChannel]: [...(prev[activeChannel] || []), dialogueMessage]
+                [activeChannel]: [...(prev[activeChannel] || []), contextMessage]
               }));
             }, cumulativeDelay);
             
-            cumulativeDelay += dialogue.delayAfterResponse || 2000;
+            cumulativeDelay += 1500;
           });
           
-          // Then show the next question after all dialogue
+          // Then add the main question
           setTimeout(() => {
-            const nextQuestion = channelQuestions[progress.questionIndex + 1];
             const questionMessage: Message = {
               id: `${activeChannel}-${nextQuestion.id}`,
               role: "agent",
@@ -295,30 +294,7 @@ const Simulation = () => {
               [activeChannel]: { questionIndex: prev[activeChannel].questionIndex + 1, followUpIndex: 0, completed: false }
             }));
           }, cumulativeDelay + 1000);
-        } else {
-          // No interstitial dialogue, go straight to next question
-          setTimeout(() => {
-            const nextQuestion = channelQuestions[progress.questionIndex + 1];
-            const questionMessage: Message = {
-              id: `${activeChannel}-${nextQuestion.id}`,
-              role: "agent",
-              author: nextQuestion.context[0]?.agent || "Team",
-              content: nextQuestion.mainQuestion,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              stimulus: nextQuestion.stimulus,
-            };
-            
-            setChannelMessages(prev => ({
-              ...prev,
-              [activeChannel]: [...(prev[activeChannel] || []), questionMessage]
-            }));
-            
-            setChannelProgress(prev => ({
-              ...prev,
-              [activeChannel]: { questionIndex: prev[activeChannel].questionIndex + 1, followUpIndex: 0, completed: false }
-            }));
-          }, 1000);
-        }
+        }, 1000);
       } else {
         // Channel completed
         setTimeout(() => {

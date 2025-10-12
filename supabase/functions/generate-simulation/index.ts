@@ -33,13 +33,13 @@ Your task is to create a dynamic, engaging simulation based on the provided job 
 
 The simulation should:
 1. Create 3 channels (e.g., Engineering Team, Product Development, Data & Analytics)
-2. Each channel should have 6 questions total (some can be main questions, some can be follow-ups)
-3. Include realistic team member dialogue that sets context
+2. Each channel should have exactly 6 questions total (including follow-ups). For example: 3 main questions with 2 follow-ups each = 6 total
+3. Include realistic team member dialogue that sets context BEFORE each main question
 4. Create distinct AI personas (e.g., Founder, Lead Engineer, Product Manager, Designer)
 5. Make the scenario feel authentic to a startup environment
 6. Include stimulus materials (code snippets, documents, data) for 30-40% of questions where relevant
 7. Stimulus materials should be realistic and role-appropriate (e.g., code for engineers, designs for designers, data for analysts)
-8. Add 2-4 realistic interstitial dialogue messages between main questions from various team members to make the simulation feel more alive
+8. Each main question should have 2-3 context messages from different team members BEFORE the question is asked, creating realistic workplace atmosphere
 
 Return a JSON structure with this exact format:
 {
@@ -70,14 +70,11 @@ Return a JSON structure with this exact format:
       "context": [
         {
           "agent": "Agent Name",
-          "message": "Context setting message"
-        }
-      ],
-      "interstitialDialogue": [
+          "message": "Context setting message from team member 1"
+        },
         {
-          "agent": "Agent Name",
-          "message": "A realistic chat message from team members",
-          "delayAfterResponse": 2000
+          "agent": "Another Agent Name",
+          "message": "Additional context or realistic workplace banter"
         }
       ],
       "followUps": [
@@ -97,7 +94,7 @@ Return a JSON structure with this exact format:
 }
 
 Note: The "stimulus" field is optional. Include it only when the question would benefit from having a code snippet, document, or data to analyze.
-The "interstitialDialogue" should be realistic chat messages that happen AFTER the candidate responds to all follow-ups but BEFORE the next main question. These make the simulation feel more realistic and engaging.`;
+The "context" array should have 2-3 messages from different team members that create realistic workplace atmosphere BEFORE each main question is asked.`;
 
     const userPrompt = `Create a hiring simulation scenario for the following:
 
@@ -107,11 +104,11 @@ ${jobDescription}
 Company Description:
 ${companyDescription}
 
-Generate a realistic simulation with 3 channels, each containing 6 questions total (mix of main questions and follow-ups) that would effectively evaluate a candidate for this role.
+Generate a realistic simulation with 3 channels, each containing exactly 6 questions total (including follow-ups). For example: 3 main questions with 2 follow-ups each = 6 total questions per channel.
 
 Include stimulus materials (code snippets, documents, data to analyze) for 30-40% of questions where it would be realistic and valuable for assessment. Make these materials authentic and relevant to the role.
 
-IMPORTANT: Add 2-4 interstitial dialogue messages between main questions from various team members. These should feel natural and add realism to the simulation - think of them as the organic chat that happens in a real workspace channel between addressing different topics.`;
+IMPORTANT: For each main question, include 2-3 context messages from different team members BEFORE the question is asked. These should feel like natural workplace dialogue that sets up the situation, provides background, or adds realistic atmosphere - just like how colleagues chat before diving into a specific question or problem.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
