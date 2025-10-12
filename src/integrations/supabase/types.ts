@@ -14,7 +14,97 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      simulation_responses: {
+        Row: {
+          id: string
+          question_id: string
+          response: string
+          simulation_id: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          response: string
+          simulation_id?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          response?: string
+          simulation_id?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulation_responses_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulation_violations: {
+        Row: {
+          id: string
+          simulation_id: string | null
+          timestamp: string | null
+          violation_type: string
+        }
+        Insert: {
+          id?: string
+          simulation_id?: string | null
+          timestamp?: string | null
+          violation_type: string
+        }
+        Update: {
+          id?: string
+          simulation_id?: string | null
+          timestamp?: string | null
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulation_violations_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulations: {
+        Row: {
+          company_description: string
+          completed_at: string | null
+          created_at: string | null
+          generated_scenario: Json
+          id: string
+          job_description: string
+          status: string | null
+        }
+        Insert: {
+          company_description: string
+          completed_at?: string | null
+          created_at?: string | null
+          generated_scenario: Json
+          id?: string
+          job_description: string
+          status?: string | null
+        }
+        Update: {
+          company_description?: string
+          completed_at?: string | null
+          created_at?: string | null
+          generated_scenario?: Json
+          id?: string
+          job_description?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
