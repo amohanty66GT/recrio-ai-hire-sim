@@ -29,12 +29,11 @@ const Simulation = () => {
   const [loading, setLoading] = useState(true);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannel, setActiveChannel] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [channelMessages, setChannelMessages] = useState<Record<string, Message[]>>({});
   const [violations, setViolations] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState("30:00");
   const [scenario, setScenario] = useState<any>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [followUpIndex, setFollowUpIndex] = useState(0);
+  const [channelProgress, setChannelProgress] = useState<Record<string, { questionIndex: number; followUpIndex: number; completed: boolean }>>({});
 
   useEffect(() => {
     if (simulationId) {
@@ -96,9 +95,21 @@ const Simulation = () => {
       }));
       setChannels(channelData);
       
+      // Initialize channel progress and messages
+      const initialProgress: Record<string, { questionIndex: number; followUpIndex: number; completed: boolean }> = {};
+      const initialMessages: Record<string, Message[]> = {};
+      
+      channelData.forEach((ch: any) => {
+        initialProgress[ch.id] = { questionIndex: 0, followUpIndex: 0, completed: false };
+        initialMessages[ch.id] = [];
+      });
+      
+      setChannelProgress(initialProgress);
+      setChannelMessages(initialMessages);
+      
       if (channelData.length > 0 && generatedScenario.questions) {
         setActiveChannel(channelData[0].id);
-        loadQuestion(generatedScenario.questions[0]);
+        loadChannelQuestions(channelData[0].id, generatedScenario.questions);
       }
     } catch (error) {
       console.error('Error loading simulation:', error);
@@ -113,13 +124,17 @@ const Simulation = () => {
     }
   };
 
-  const loadQuestion = (question: Question) => {
+  const loadChannelQuestions = (channelId: string, questions: Question[]) => {
+    const channelQuestions = questions.filter(q => q.channel === channelId);
+    if (channelQuestions.length === 0) return;
+    
+    const firstQuestion = channelQuestions[0];
     const questionMessages: Message[] = [];
     
     // Add context messages from team members
-    question.context.forEach((ctx, idx) => {
+    firstQuestion.context.forEach((ctx, idx) => {
       questionMessages.push({
-        id: `context-${idx}`,
+        id: `${channelId}-context-${idx}`,
         role: "agent",
         author: ctx.agent,
         content: ctx.message,
@@ -129,14 +144,14 @@ const Simulation = () => {
 
     // Add the main question
     questionMessages.push({
-      id: question.id,
+      id: `${channelId}-${firstQuestion.id}`,
       role: "agent",
-      author: question.context[0]?.agent || "Team",
-      content: question.mainQuestion,
+      author: firstQuestion.context[0]?.agent || "Team",
+      content: firstQuestion.mainQuestion,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     });
 
-    setMessages(questionMessages);
+    setChannelMessages(prev => ({ ...prev, [channelId]: questionMessages }));
   };
 
   const handleViolation = async (type: string) => {
@@ -165,13 +180,19 @@ const Simulation = () => {
       content: response,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-    setMessages([...messages, newMessage]);
+    
+    setChannelMessages(prev => ({
+      ...prev,
+      [activeChannel]: [...(prev[activeChannel] || []), newMessage]
+    }));
 
-    // Save response to database
-    const currentQuestion = scenario.questions[currentQuestionIndex];
-    const questionId = followUpIndex === 0 
+    const progress = channelProgress[activeChannel];
+    const channelQuestions = scenario.questions.filter((q: Question) => q.channel === activeChannel);
+    const currentQuestion = channelQuestions[progress.questionIndex];
+    
+    const questionId = progress.followUpIndex === 0 
       ? currentQuestion.id 
-      : currentQuestion.followUps[followUpIndex - 1].id;
+      : currentQuestion.followUps[progress.followUpIndex - 1].id;
 
     try {
       await supabase.from('simulation_responses').insert({
@@ -181,28 +202,75 @@ const Simulation = () => {
       });
 
       // Move to next follow-up or question
-      if (followUpIndex < currentQuestion.followUps.length) {
-        const followUp = currentQuestion.followUps[followUpIndex];
+      if (progress.followUpIndex < currentQuestion.followUps.length) {
+        const followUp = currentQuestion.followUps[progress.followUpIndex];
         setTimeout(() => {
           const followUpMessage: Message = {
-            id: followUp.id,
+            id: `${activeChannel}-${followUp.id}`,
             role: "agent",
             author: followUp.agent,
             content: followUp.question,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           };
-          setMessages((prev) => [...prev, followUpMessage]);
-          setFollowUpIndex(followUpIndex + 1);
+          
+          setChannelMessages(prev => ({
+            ...prev,
+            [activeChannel]: [...(prev[activeChannel] || []), followUpMessage]
+          }));
+          
+          setChannelProgress(prev => ({
+            ...prev,
+            [activeChannel]: { ...prev[activeChannel], followUpIndex: prev[activeChannel].followUpIndex + 1 }
+          }));
         }, 1000);
-      } else if (currentQuestionIndex < scenario.questions.length - 1) {
-        // Move to next question
+      } else if (progress.questionIndex < channelQuestions.length - 1) {
+        // Move to next question in the same channel
         setTimeout(() => {
-          const nextQuestion = scenario.questions[currentQuestionIndex + 1];
-          setCurrentQuestionIndex(currentQuestionIndex + 1);
-          setFollowUpIndex(0);
-          setActiveChannel(nextQuestion.channel);
-          loadQuestion(nextQuestion);
-        }, 2000);
+          const nextQuestion = channelQuestions[progress.questionIndex + 1];
+          const questionMessage: Message = {
+            id: `${activeChannel}-${nextQuestion.id}`,
+            role: "agent",
+            author: nextQuestion.context[0]?.agent || "Team",
+            content: nextQuestion.mainQuestion,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          };
+          
+          setChannelMessages(prev => ({
+            ...prev,
+            [activeChannel]: [...(prev[activeChannel] || []), questionMessage]
+          }));
+          
+          setChannelProgress(prev => ({
+            ...prev,
+            [activeChannel]: { questionIndex: prev[activeChannel].questionIndex + 1, followUpIndex: 0, completed: false }
+          }));
+        }, 1000);
+      } else {
+        // Channel completed
+        setTimeout(() => {
+          const completionMessage: Message = {
+            id: `${activeChannel}-completion`,
+            role: "agent",
+            author: "System",
+            content: "🎉 Escalation resolved! Great work. Please proceed to the next channel.",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          };
+          
+          setChannelMessages(prev => ({
+            ...prev,
+            [activeChannel]: [...(prev[activeChannel] || []), completionMessage]
+          }));
+          
+          setChannelProgress(prev => ({
+            ...prev,
+            [activeChannel]: { ...prev[activeChannel], completed: true }
+          }));
+          
+          // Update channel to show completion
+          setChannels(prev => prev.map(ch => 
+            ch.id === activeChannel ? { ...ch, locked: true } : ch
+          ));
+        }, 1000);
       }
     } catch (error) {
       console.error('Error saving response:', error);
@@ -255,7 +323,7 @@ const Simulation = () => {
       />
       <ChatArea
         channelName={activeChannel}
-        messages={messages}
+        messages={channelMessages[activeChannel] || []}
         onSendResponse={handleSendResponse}
         onSubmitSimulation={handleSubmitSimulation}
         violations={violations}
