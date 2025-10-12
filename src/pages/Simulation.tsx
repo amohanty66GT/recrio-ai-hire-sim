@@ -5,6 +5,7 @@ import { ChatArea, Message } from "@/components/simulation/ChatArea";
 import { CameraProctoring } from "@/components/simulation/CameraProctoring";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
 interface Channel {
@@ -32,6 +33,7 @@ const Simulation = () => {
   const { simulationId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -43,10 +45,16 @@ const Simulation = () => {
   const [channelProgress, setChannelProgress] = useState<Record<string, { questionIndex: number; followUpIndex: number; completed: boolean }>>({});
 
   useEffect(() => {
-    if (simulationId) {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (simulationId && user) {
       loadSimulation();
     }
-  }, [simulationId]);
+  }, [simulationId, user]);
 
   useEffect(() => {
     // Load questions for active channel if not loaded yet
@@ -362,7 +370,7 @@ const Simulation = () => {
     await handleSubmitSimulation();
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />

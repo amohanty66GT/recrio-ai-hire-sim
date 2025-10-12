@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2, LogOut } from "lucide-react";
 
 const SimulationSetup = () => {
   const [jobDescription, setJobDescription] = useState("");
@@ -14,6 +15,13 @@ const SimulationSetup = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading, signOut } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
   const handleGenerate = async () => {
     if (!jobDescription.trim() || !companyDescription.trim()) {
@@ -48,6 +56,7 @@ const SimulationSetup = () => {
           job_description: jobDescription.trim(),
           company_description: companyDescription.trim(),
           generated_scenario: functionData.scenario,
+          user_id: user?.id,
         })
         .select()
         .single();
@@ -73,14 +82,27 @@ const SimulationSetup = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <Card className="w-full max-w-3xl p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Create Simulation</h1>
-          <p className="text-muted-foreground">
-            Provide details about the role and company to generate a personalized hiring simulation
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Create Simulation</h1>
+            <p className="text-muted-foreground">
+              Provide details about the role and company to generate a personalized hiring simulation
+            </p>
+          </div>
+          <Button variant="outline" size="icon" onClick={signOut}>
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="space-y-6">
