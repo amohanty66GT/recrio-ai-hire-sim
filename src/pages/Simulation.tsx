@@ -31,7 +31,7 @@ const Simulation = () => {
   const [activeChannel, setActiveChannel] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [violations, setViolations] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState("15:00");
+  const [timeRemaining, setTimeRemaining] = useState("30:00");
   const [scenario, setScenario] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [followUpIndex, setFollowUpIndex] = useState(0);

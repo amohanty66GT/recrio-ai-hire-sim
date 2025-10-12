@@ -32,8 +32,8 @@ serve(async (req) => {
 Your task is to create a dynamic, engaging simulation based on the provided job description and company description.
 
 The simulation should:
-1. Include 3 main technical/situational questions relevant to the role
-2. Each question should have 2 follow-up questions that dig deeper
+1. Create 3 channels (e.g., Engineering Team, Product Development, Data & Analytics)
+2. Each channel should have 6 questions total (some can be main questions, some can be follow-ups)
 3. Include realistic team member dialogue that sets context
 4. Create distinct AI personas (e.g., Founder, Lead Engineer, Product Manager, Designer)
 5. Make the scenario feel authentic to a startup environment
@@ -89,7 +89,7 @@ ${jobDescription}
 Company Description:
 ${companyDescription}
 
-Generate a realistic simulation with 3 questions (each with 2 follow-ups) that would effectively evaluate a candidate for this role.`;
+Generate a realistic simulation with 3 channels, each containing 6 questions total (mix of main questions and follow-ups) that would effectively evaluate a candidate for this role.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
