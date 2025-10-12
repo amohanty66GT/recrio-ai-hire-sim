@@ -18,6 +18,7 @@ interface Question {
   channel: string;
   mainQuestion: string;
   context: Array<{ agent: string; message: string }>;
+  interstitialDialogue?: Array<{ agent: string; message: string; delayAfterResponse?: number }>;
   followUps: Array<{ id: string; agent: string; question: string }>;
   stimulus?: {
     type: "code" | "document" | "data";
@@ -247,28 +248,77 @@ const Simulation = () => {
           }));
         }, 1000);
       } else if (progress.questionIndex < channelQuestions.length - 1) {
-        // Move to next question in the same channel
-        setTimeout(() => {
-          const nextQuestion = channelQuestions[progress.questionIndex + 1];
-          const questionMessage: Message = {
-            id: `${activeChannel}-${nextQuestion.id}`,
-            role: "agent",
-            author: nextQuestion.context[0]?.agent || "Team",
-            content: nextQuestion.mainQuestion,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            stimulus: nextQuestion.stimulus,
-          };
+        // Add interstitial dialogue before next question if available
+        const interstitialDialogue = currentQuestion.interstitialDialogue || [];
+        
+        if (interstitialDialogue.length > 0) {
+          // Show interstitial dialogue first
+          let cumulativeDelay = 1000;
+          interstitialDialogue.forEach((dialogue, idx) => {
+            setTimeout(() => {
+              const dialogueMessage: Message = {
+                id: `${activeChannel}-interstitial-${progress.questionIndex}-${idx}`,
+                role: "agent",
+                author: dialogue.agent,
+                content: dialogue.message,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              };
+              
+              setChannelMessages(prev => ({
+                ...prev,
+                [activeChannel]: [...(prev[activeChannel] || []), dialogueMessage]
+              }));
+            }, cumulativeDelay);
+            
+            cumulativeDelay += dialogue.delayAfterResponse || 2000;
+          });
           
-          setChannelMessages(prev => ({
-            ...prev,
-            [activeChannel]: [...(prev[activeChannel] || []), questionMessage]
-          }));
-          
-          setChannelProgress(prev => ({
-            ...prev,
-            [activeChannel]: { questionIndex: prev[activeChannel].questionIndex + 1, followUpIndex: 0, completed: false }
-          }));
-        }, 1000);
+          // Then show the next question after all dialogue
+          setTimeout(() => {
+            const nextQuestion = channelQuestions[progress.questionIndex + 1];
+            const questionMessage: Message = {
+              id: `${activeChannel}-${nextQuestion.id}`,
+              role: "agent",
+              author: nextQuestion.context[0]?.agent || "Team",
+              content: nextQuestion.mainQuestion,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              stimulus: nextQuestion.stimulus,
+            };
+            
+            setChannelMessages(prev => ({
+              ...prev,
+              [activeChannel]: [...(prev[activeChannel] || []), questionMessage]
+            }));
+            
+            setChannelProgress(prev => ({
+              ...prev,
+              [activeChannel]: { questionIndex: prev[activeChannel].questionIndex + 1, followUpIndex: 0, completed: false }
+            }));
+          }, cumulativeDelay + 1000);
+        } else {
+          // No interstitial dialogue, go straight to next question
+          setTimeout(() => {
+            const nextQuestion = channelQuestions[progress.questionIndex + 1];
+            const questionMessage: Message = {
+              id: `${activeChannel}-${nextQuestion.id}`,
+              role: "agent",
+              author: nextQuestion.context[0]?.agent || "Team",
+              content: nextQuestion.mainQuestion,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              stimulus: nextQuestion.stimulus,
+            };
+            
+            setChannelMessages(prev => ({
+              ...prev,
+              [activeChannel]: [...(prev[activeChannel] || []), questionMessage]
+            }));
+            
+            setChannelProgress(prev => ({
+              ...prev,
+              [activeChannel]: { questionIndex: prev[activeChannel].questionIndex + 1, followUpIndex: 0, completed: false }
+            }));
+          }, 1000);
+        }
       } else {
         // Channel completed
         setTimeout(() => {
