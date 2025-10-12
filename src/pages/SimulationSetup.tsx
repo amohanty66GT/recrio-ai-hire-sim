@@ -142,7 +142,7 @@ const SimulationSetup = () => {
                 Generating Simulation...
               </>
             ) : (
-              "Generate Simulation"
+              "Start Simulation"
             )}
           </Button>
         </div>
