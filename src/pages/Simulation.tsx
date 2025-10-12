@@ -42,6 +42,13 @@ const Simulation = () => {
   }, [simulationId]);
 
   useEffect(() => {
+    // Load questions for active channel if not loaded yet
+    if (activeChannel && scenario && (!channelMessages[activeChannel] || channelMessages[activeChannel].length === 0)) {
+      loadChannelQuestions(activeChannel, scenario.questions);
+    }
+  }, [activeChannel, scenario]);
+
+  useEffect(() => {
     // Timer countdown
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
