@@ -37,6 +37,8 @@ The simulation should:
 3. Include realistic team member dialogue that sets context
 4. Create distinct AI personas (e.g., Founder, Lead Engineer, Product Manager, Designer)
 5. Make the scenario feel authentic to a startup environment
+6. Include stimulus materials (code snippets, documents, data) for 30-40% of questions where relevant
+7. Stimulus materials should be realistic and role-appropriate (e.g., code for engineers, designs for designers, data for analysts)
 
 Return a JSON structure with this exact format:
 {
@@ -59,6 +61,11 @@ Return a JSON structure with this exact format:
       "id": "q1",
       "channel": "channel-id",
       "mainQuestion": "The primary question",
+      "stimulus": {
+        "type": "code|document|data",
+        "title": "Brief title for the stimulus",
+        "content": "The actual code snippet, document text, or data"
+      },
       "context": [
         {
           "agent": "Agent Name",
@@ -79,7 +86,9 @@ Return a JSON structure with this exact format:
       ]
     }
   ]
-}`;
+}
+
+Note: The "stimulus" field is optional. Include it only when the question would benefit from having a code snippet, document, or data to analyze.`;
 
     const userPrompt = `Create a hiring simulation scenario for the following:
 
@@ -89,7 +98,9 @@ ${jobDescription}
 Company Description:
 ${companyDescription}
 
-Generate a realistic simulation with 3 channels, each containing 6 questions total (mix of main questions and follow-ups) that would effectively evaluate a candidate for this role.`;
+Generate a realistic simulation with 3 channels, each containing 6 questions total (mix of main questions and follow-ups) that would effectively evaluate a candidate for this role.
+
+Include stimulus materials (code snippets, documents, data to analyze) for 30-40% of questions where it would be realistic and valuable for assessment. Make these materials authentic and relevant to the role.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

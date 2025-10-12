@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { StimulusDisplay } from "./StimulusDisplay";
 
 export type MessageRole = "system" | "agent" | "candidate";
 
@@ -7,9 +8,14 @@ interface ChatMessageProps {
   author?: string;
   content: string;
   timestamp?: string;
+  stimulus?: {
+    type: "code" | "document" | "data";
+    title: string;
+    content: string;
+  };
 }
 
-export const ChatMessage = ({ role, author, content, timestamp }: ChatMessageProps) => {
+export const ChatMessage = ({ role, author, content, timestamp, stimulus }: ChatMessageProps) => {
   const getRoleColor = () => {
     switch (role) {
       case "system":
@@ -55,6 +61,13 @@ export const ChatMessage = ({ role, author, content, timestamp }: ChatMessagePro
           <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
             {content}
           </div>
+          {stimulus && (
+            <StimulusDisplay
+              type={stimulus.type}
+              title={stimulus.title}
+              content={stimulus.content}
+            />
+          )}
         </div>
       </div>
     </div>

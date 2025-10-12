@@ -9,6 +9,11 @@ export interface Message {
   author?: string;
   content: string;
   timestamp?: string;
+  stimulus?: {
+    type: "code" | "document" | "data";
+    title: string;
+    content: string;
+  };
 }
 
 interface ChatAreaProps {

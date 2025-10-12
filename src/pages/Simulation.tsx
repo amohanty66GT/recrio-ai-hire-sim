@@ -19,6 +19,11 @@ interface Question {
   mainQuestion: string;
   context: Array<{ agent: string; message: string }>;
   followUps: Array<{ id: string; agent: string; question: string }>;
+  stimulus?: {
+    type: "code" | "document" | "data";
+    title: string;
+    content: string;
+  };
 }
 
 const Simulation = () => {
@@ -156,6 +161,7 @@ const Simulation = () => {
       author: firstQuestion.context[0]?.agent || "Team",
       content: firstQuestion.mainQuestion,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      stimulus: firstQuestion.stimulus,
     });
 
     setChannelMessages(prev => ({ ...prev, [channelId]: questionMessages }));
@@ -240,6 +246,7 @@ const Simulation = () => {
             author: nextQuestion.context[0]?.agent || "Team",
             content: nextQuestion.mainQuestion,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            stimulus: nextQuestion.stimulus,
           };
           
           setChannelMessages(prev => ({
