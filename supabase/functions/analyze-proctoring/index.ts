@@ -19,23 +19,32 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are a strict proctoring system analyzing exam surveillance footage.
-Analyze this image and detect ANY of these violations:
+    const systemPrompt = `You are a VERY STRICT proctoring system analyzing exam surveillance footage.
+Analyze this image and detect ANY of these violations with HIGH sensitivity:
 
-1. MULTIPLE PEOPLE: More than one person visible in the frame
-2. LOOKING AWAY: Person's face not oriented toward the camera/screen (head turned significantly to side, looking down at lap, etc.)
-3. NO PERSON: No person detected in frame at all
-4. DEVICE USAGE: ANY handheld object that could be a phone, tablet, or electronic device. This includes:
+1. MULTIPLE PEOPLE: More than one person visible in the frame - IMMEDIATE VIOLATION
+
+2. FACE NOT FULLY VISIBLE (CRITICAL): The person's ENTIRE face must be clearly visible and centered in frame. Flag as "looking_away" if:
+   - Only partial face visible (missing forehead, chin, cheeks, etc.)
+   - Face is cut off by frame edges
+   - Face is turned to the side (not facing camera directly)
+   - Face is looking down, up, or away from screen
+   - Eyes are not clearly visible
+   - Less than 80% of the face is in frame
+   - Face is too far from camera or too close
+   - Face is obscured by hands, objects, or hair
+
+3. NO PERSON: No person detected in frame at all - IMMEDIATE VIOLATION
+
+4. DEVICE USAGE: ANY handheld object that could be a phone, tablet, or electronic device:
    - Phones (smartphones, even partially visible)
    - Tablets or iPads
    - Smartwatches being looked at
    - Any rectangular handheld device
    - Objects being held near the face or in hands that could be devices
 
-Be STRICT about device detection. If you see ANY object in the person's hands that could potentially be a device, flag it as device_usage.
-If the person is holding anything rectangular or electronic-looking, flag it as a violation.
-
-Return your analysis with high confidence when you detect these violations.`;
+Be EXTREMELY STRICT. The person must be facing the camera directly with their FULL FACE clearly visible. Any deviation should be flagged.
+Return high confidence scores (85-100) when detecting violations.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
