@@ -25,8 +25,17 @@ serve(async (req) => {
       `Q${idx + 1}: ${r.question_id}\nA: ${r.response}`
     ).join("\n\n");
 
-    const systemPrompt = `You are an expert evaluator for startup founders and early-stage employees. 
-Analyze the candidate's responses to this simulation and provide detailed scoring across multiple dimensions.
+    const systemPrompt = `You are an exceptionally strict expert evaluator for top-tier startup founders and early-stage employees. 
+Your standards are extremely high - you're evaluating candidates as if they're applying to YC, Sequoia, or a FAANG company.
+
+EVALUATION PHILOSOPHY:
+- Be HIGHLY CRITICAL and set the bar very high
+- Scores above 80 should be reserved ONLY for exceptional, standout responses
+- Average or mediocre responses should score 40-60
+- Weak responses should score below 40
+- Look for depth of reasoning, not just surface-level answers
+- Penalize vague, generic, or unactionable responses heavily
+- Reward specific, data-driven, innovative thinking with concrete execution plans
 
 SCENARIO CONTEXT:
 ${JSON.stringify(scenario, null, 2)}
@@ -34,7 +43,7 @@ ${JSON.stringify(scenario, null, 2)}
 CANDIDATE RESPONSES:
 ${responsesContext}
 
-Provide scores (0-100) for each dimension and a brief analysis explaining the scores. Be critical but fair.`;
+Provide scores (0-100) for each dimension with STRICT evaluation. Most candidates should score in the 30-70 range. Be brutally honest in your analysis.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
