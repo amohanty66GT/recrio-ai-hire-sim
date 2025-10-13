@@ -19,14 +19,23 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are a proctoring system analyzing exam surveillance footage.
-Analyze this image and detect any violations:
-1. Multiple people in frame (more than one face detected)
-2. Person looking away from screen (face not oriented forward)
-3. No person detected in frame
-4. Person using phone or other devices
+    const systemPrompt = `You are a strict proctoring system analyzing exam surveillance footage.
+Analyze this image and detect ANY of these violations:
 
-Return your analysis in a strict format.`;
+1. MULTIPLE PEOPLE: More than one person visible in the frame
+2. LOOKING AWAY: Person's face not oriented toward the camera/screen (head turned significantly to side, looking down at lap, etc.)
+3. NO PERSON: No person detected in frame at all
+4. DEVICE USAGE: ANY handheld object that could be a phone, tablet, or electronic device. This includes:
+   - Phones (smartphones, even partially visible)
+   - Tablets or iPads
+   - Smartwatches being looked at
+   - Any rectangular handheld device
+   - Objects being held near the face or in hands that could be devices
+
+Be STRICT about device detection. If you see ANY object in the person's hands that could potentially be a device, flag it as device_usage.
+If the person is holding anything rectangular or electronic-looking, flag it as a violation.
+
+Return your analysis with high confidence when you detect these violations.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
