@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/simulation/Sidebar";
 import { ChatArea, Message } from "@/components/simulation/ChatArea";
+import { CameraProctoring } from "@/components/simulation/CameraProctoring";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -379,13 +380,23 @@ const Simulation = () => {
         timeRemaining={timeRemaining}
         violations={violations}
       />
-      <ChatArea
-        channelName={activeChannel}
-        messages={channelMessages[activeChannel] || []}
-        onSendResponse={handleSendResponse}
-        onSubmitSimulation={handleSubmitSimulation}
-        violations={violations}
-      />
+      <div className="flex-1 flex flex-col">
+        <div className="p-4 border-b flex justify-end">
+          <CameraProctoring 
+            onViolation={handleViolation}
+            simulationId={simulationId!}
+          />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <ChatArea
+            channelName={activeChannel}
+            messages={channelMessages[activeChannel] || []}
+            onSendResponse={handleSendResponse}
+            onSubmitSimulation={handleSubmitSimulation}
+            violations={violations}
+          />
+        </div>
+      </div>
     </div>
   );
 };
