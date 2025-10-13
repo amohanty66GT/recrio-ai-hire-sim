@@ -112,6 +112,7 @@ export const ChatArea = ({
               author={message.author}
               content={message.content}
               timestamp={message.timestamp}
+              stimulus={message.stimulus}
             />
           ))}
           <div ref={messagesEndRef} />
