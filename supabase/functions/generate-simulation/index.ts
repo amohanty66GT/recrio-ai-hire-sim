@@ -41,6 +41,16 @@ The simulation should:
 7. Stimulus materials should be realistic and role-appropriate (e.g., code for engineers, designs for designers, data for analysts)
 8. Each main question should have 2-3 context messages from different team members BEFORE the question is asked, creating realistic workplace atmosphere
 
+CRITICAL RULE ABOUT STIMULUS MATERIALS:
+- If your question text references ANY external material (e.g., "based on this JSON file", "looking at this table", "review this code", "analyze this data"), you MUST include that material in the stimulus field
+- NEVER ask candidates to analyze, review, or reference materials that you don't provide
+- If the question doesn't need to reference specific materials, don't mention them in the question text
+
+Examples:
+❌ BAD: "Based on this JSON file, what would you recommend?" (no stimulus provided)
+✅ GOOD: "Based on this JSON file, what would you recommend?" (stimulus field contains the actual JSON)
+✅ GOOD: "What approach would you take to improve our API performance?" (no stimulus needed, general question)
+
 Return a JSON structure with this exact format:
 {
   "agents": [
@@ -93,7 +103,7 @@ Return a JSON structure with this exact format:
   ]
 }
 
-Note: The "stimulus" field is optional. Include it only when the question would benefit from having a code snippet, document, or data to analyze.
+Note: The "stimulus" field should be included whenever the question references specific materials to analyze. If you mention it in the question, you must provide it.
 The "context" array should have 2-3 messages from different team members that create realistic workplace atmosphere BEFORE each main question is asked.`;
 
     const userPrompt = `Create a hiring simulation scenario for the following:
@@ -107,6 +117,8 @@ ${companyDescription}
 Generate a realistic simulation with 3 channels, each containing exactly 6 questions total (including follow-ups). For example: 3 main questions with 2 follow-ups each = 6 total questions per channel.
 
 Include stimulus materials (code snippets, documents, data to analyze) for 30-40% of questions where it would be realistic and valuable for assessment. Make these materials authentic and relevant to the role.
+
+CRITICAL: If ANY question text references external material ("this JSON", "this table", "this code", "this document", etc.), you MUST include that exact material in the stimulus field. Never ask candidates to analyze materials you don't provide.
 
 IMPORTANT: For each main question, include 2-3 context messages from different team members BEFORE the question is asked. These should feel like natural workplace dialogue that sets up the situation, provides background, or adds realistic atmosphere - just like how colleagues chat before diving into a specific question or problem.`;
 
