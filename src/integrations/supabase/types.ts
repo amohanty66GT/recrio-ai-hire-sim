@@ -91,6 +91,7 @@ export type Database = {
           job_description: string
           status: string | null
           user_id: string | null
+          violations_count: number
         }
         Insert: {
           company_description: string
@@ -101,6 +102,7 @@ export type Database = {
           job_description: string
           status?: string | null
           user_id?: string | null
+          violations_count?: number
         }
         Update: {
           company_description?: string
@@ -111,6 +113,7 @@ export type Database = {
           job_description?: string
           status?: string | null
           user_id?: string | null
+          violations_count?: number
         }
         Relationships: []
       }
