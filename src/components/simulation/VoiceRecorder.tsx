@@ -5,9 +5,10 @@ import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 interface VoiceRecorderProps {
   onTranscript: (text: string) => void;
   disabled?: boolean;
+  onRecordingStart?: () => void;
 }
 
-export const VoiceRecorder = ({ onTranscript, disabled }: VoiceRecorderProps) => {
+export const VoiceRecorder = ({ onTranscript, disabled, onRecordingStart }: VoiceRecorderProps) => {
   const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder();
 
   const handleToggleRecording = async () => {
@@ -17,6 +18,7 @@ export const VoiceRecorder = ({ onTranscript, disabled }: VoiceRecorderProps) =>
         onTranscript(transcript);
       }
     } else {
+      onRecordingStart?.();
       await startRecording();
     }
   };

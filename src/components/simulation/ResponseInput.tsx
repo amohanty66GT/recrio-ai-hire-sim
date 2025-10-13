@@ -51,6 +51,7 @@ export const ResponseInput = ({
         <VoiceRecorder
           onTranscript={handleVoiceTranscript}
           disabled={disabled}
+          onRecordingStart={onRecordingStart}
         />
         <Button
           onClick={handleSubmit}
