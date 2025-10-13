@@ -1,7 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatMessage, MessageRole } from "./ChatMessage";
 import { ResponseInput } from "./ResponseInput";
 import { Button } from "@/components/ui/button";
+import { VoiceParticipants } from "./VoiceParticipants";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 
 export interface Message {
   id: string;
@@ -32,6 +34,9 @@ export const ChatArea = ({
   violations,
 }: ChatAreaProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { speak, stop, currentSpeaker } = useTextToSpeech();
+  const [speakers, setSpeakers] = useState<Array<{ name: string; isSpeaking: boolean }>>([]);
+  const lastMessageIdRef = useRef<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,8 +46,44 @@ export const ChatArea = ({
     scrollToBottom();
   }, [messages]);
 
+  // Handle TTS for new messages
+  useEffect(() => {
+    if (messages.length === 0) return;
+    
+    const lastMessage = messages[messages.length - 1];
+    
+    // Only speak agent messages and only new ones
+    if (lastMessage.role === "agent" && lastMessage.id !== lastMessageIdRef.current) {
+      lastMessageIdRef.current = lastMessage.id;
+      const author = lastMessage.author || "System";
+      speak(lastMessage.content, author);
+    }
+  }, [messages, speak]);
+
+  // Update speakers list based on current speaker
+  useEffect(() => {
+    const uniqueAuthors = Array.from(
+      new Set(messages.filter(m => m.role === "agent").map(m => m.author || "System"))
+    );
+    
+    setSpeakers(
+      uniqueAuthors.map(name => ({
+        name,
+        isSpeaking: name === currentSpeaker,
+      }))
+    );
+  }, [messages, currentSpeaker]);
+
+  const handleRecordingStart = () => {
+    // Stop any ongoing TTS when user starts recording
+    stop();
+  };
+
   return (
     <div className="flex-1 flex flex-col h-screen">
+      {/* Voice Participants */}
+      {speakers.length > 0 && <VoiceParticipants speakers={speakers} />}
+      
       {/* Channel Header */}
       <div className="border-b border-border bg-background px-6 py-4 flex items-center justify-between">
         <div>
@@ -64,9 +105,9 @@ export const ChatArea = ({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto bg-recrio-chat">
         <div className="max-w-5xl mx-auto">
-          {messages.map((message) => (
+          {messages.map((message, index) => (
             <ChatMessage
-              key={message.id}
+              key={`${message.id}-${index}`}
               role={message.role}
               author={message.author}
               content={message.content}
@@ -78,7 +119,10 @@ export const ChatArea = ({
       </div>
 
       {/* Response Input */}
-      <ResponseInput onSubmit={onSendResponse} />
+      <ResponseInput 
+        onSubmit={onSendResponse} 
+        onRecordingStart={handleRecordingStart}
+      />
     </div>
   );
 };

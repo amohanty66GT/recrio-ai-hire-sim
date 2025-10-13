@@ -2,19 +2,26 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
+import { VoiceRecorder } from "./VoiceRecorder";
 
 interface ResponseInputProps {
   onSubmit: (response: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  onRecordingStart?: () => void;
 }
 
 export const ResponseInput = ({
   onSubmit,
   placeholder = "Type your response...",
   disabled = false,
+  onRecordingStart,
 }: ResponseInputProps) => {
   const [response, setResponse] = useState("");
+
+  const handleVoiceTranscript = (text: string) => {
+    setResponse(text);
+  };
 
   const handleSubmit = () => {
     if (response.trim()) {
@@ -41,6 +48,10 @@ export const ResponseInput = ({
           disabled={disabled}
           className="min-h-[80px] resize-none"
         />
+        <VoiceRecorder
+          onTranscript={handleVoiceTranscript}
+          disabled={disabled}
+        />
         <Button
           onClick={handleSubmit}
           disabled={disabled || !response.trim()}
@@ -51,7 +62,7 @@ export const ResponseInput = ({
         </Button>
       </div>
       <p className="text-xs text-muted-foreground mt-2">
-        Press Enter to send, Shift+Enter for new line
+        Press Enter to send, Shift+Enter for new line, or use voice recording
       </p>
     </div>
   );
