@@ -113,6 +113,8 @@ const Index = () => {
         onChannelSelect={setActiveChannel}
         timeRemaining={timeRemaining}
         violations={violations}
+        onViolation={() => {}}
+        simulationId="demo"
       />
       <ChatArea
         channelName={activeChannel}

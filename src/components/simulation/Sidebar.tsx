@@ -1,6 +1,7 @@
 import { Clock, AlertTriangle, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { CameraProctoring } from "./CameraProctoring";
 
 interface Channel {
   id: string;
@@ -15,6 +16,8 @@ interface SidebarProps {
   onChannelSelect: (channelId: string) => void;
   timeRemaining: string;
   violations: number;
+  onViolation: (type: string) => void;
+  simulationId: string;
 }
 
 export const Sidebar = ({
@@ -23,6 +26,8 @@ export const Sidebar = ({
   onChannelSelect,
   timeRemaining,
   violations,
+  onViolation,
+  simulationId,
 }: SidebarProps) => {
   return (
     <div className="w-72 bg-recrio-sidebar text-white flex flex-col h-screen">
@@ -80,6 +85,11 @@ export const Sidebar = ({
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Camera Proctoring */}
+      <div className="p-4 border-t border-white/10">
+        <CameraProctoring onViolation={onViolation} simulationId={simulationId} />
       </div>
     </div>
   );

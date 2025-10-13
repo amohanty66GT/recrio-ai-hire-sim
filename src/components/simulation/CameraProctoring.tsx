@@ -103,36 +103,34 @@ export const CameraProctoring = ({ onViolation, simulationId }: CameraProctoring
   };
 
   return (
-    <Card className="p-4 w-64">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {cameraEnabled ? (
-              <Camera className="h-4 w-4 text-green-500" />
-            ) : (
-              <CameraOff className="h-4 w-4 text-destructive" />
-            )}
-            <span className="text-sm font-medium">Proctoring</span>
-          </div>
-          {cameraEnabled && (
-            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {cameraEnabled ? (
+            <Camera className="h-4 w-4 text-green-500" />
+          ) : (
+            <CameraOff className="h-4 w-4 text-destructive" />
           )}
+          <span className="text-sm font-medium text-white">Proctoring</span>
         </div>
-        
-        <div className="relative bg-muted rounded-md overflow-hidden aspect-video">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
-        </div>
-        
-        <p className="text-xs text-muted-foreground">
-          Stay in frame and alone during the simulation
-        </p>
+        {cameraEnabled && (
+          <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+        )}
       </div>
-    </Card>
+      
+      <div className="relative bg-black/20 rounded-md overflow-hidden aspect-video">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover"
+        />
+      </div>
+      
+      <p className="text-xs text-white/60">
+        Stay in frame and alone during the simulation
+      </p>
+    </div>
   );
 };
