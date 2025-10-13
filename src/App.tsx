@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import SimulationSetup from "./pages/SimulationSetup";
 import Simulation from "./pages/Simulation";
+import Analytics from "./pages/Analytics";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -22,6 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<SimulationSetup />} />
             <Route path="/simulation/:simulationId" element={<Simulation />} />
+            <Route path="/analytics/:simulationId" element={<Analytics />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/demo" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

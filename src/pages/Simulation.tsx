@@ -352,7 +352,7 @@ const Simulation = () => {
         description: "Your responses are being analyzed.",
       });
       
-      navigate('/');
+      navigate(`/analytics/${simulationId}`);
     } catch (error) {
       console.error('Error submitting simulation:', error);
     }
