@@ -108,6 +108,20 @@ const Analytics = () => {
           <>
             <OverallScore score={scores.overallStartupReadinessIndex} />
 
+            <Card className="p-6 border-2 border-destructive/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-muted-foreground">Violations Detected</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Rule violations during simulation
+                  </p>
+                </div>
+                <div className="text-4xl font-bold text-destructive">
+                  {simulation?.violations_count || 0}
+                </div>
+              </div>
+            </Card>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <ScoreCard
                 title="Business Impact Score"
