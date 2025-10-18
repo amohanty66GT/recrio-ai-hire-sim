@@ -155,12 +155,19 @@ IMPORTANT: For each main question, include 2-3 context messages from different t
     try {
       const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) || 
                        generatedText.match(/```\n([\s\S]*?)\n```/);
-      const jsonText = jsonMatch ? jsonMatch[1] : generatedText;
+      let jsonText = jsonMatch ? jsonMatch[1] : generatedText;
+      
+      // Clean up common JSON issues from AI responses
+      // Replace unescaped ampersands in string values
+      jsonText = jsonText.replace(/": "([^"]*?)&([^"]*?)"/g, (_match: string, before: string, after: string) => {
+        return `": "${before}\\u0026${after}"`;
+      });
+      
       scenarioJson = JSON.parse(jsonText);
     } catch (e) {
-      console.error('Failed to parse JSON:', e, generatedText);
+      console.error('Failed to parse JSON:', e, generatedText.substring(0, 1000));
       return new Response(
-        JSON.stringify({ error: 'Failed to parse generated scenario' }),
+        JSON.stringify({ error: 'Failed to parse generated scenario. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
