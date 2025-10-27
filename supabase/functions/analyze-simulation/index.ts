@@ -22,8 +22,10 @@ serve(async (req) => {
     
     // Build context from responses
     const responsesContext = responses.map((r: any, idx: number) => 
-      `Q${idx + 1}: ${r.question_id}\nA: ${r.response}`
+      `Q${idx + 1}: ${r.question_id}\nA: ${r.response || "[NO RESPONSE PROVIDED]"}`
     ).join("\n\n");
+
+    const hasAnyResponses = responses.some((r: any) => r.response && r.response.trim().length > 0);
 
     const systemPrompt = `You are an exceptionally strict expert evaluator for top-tier startup founders and early-stage employees. 
 Your standards are extremely high - you're evaluating candidates as if they're applying to YC, Sequoia, or a FAANG company.
@@ -33,9 +35,11 @@ EVALUATION PHILOSOPHY:
 - Scores above 80 should be reserved ONLY for exceptional, standout responses
 - Average or mediocre responses should score 40-60
 - Weak responses should score below 40
+- NO RESPONSES OR EMPTY RESPONSES must score 0-5 (complete failure)
 - Look for depth of reasoning, not just surface-level answers
 - Penalize vague, generic, or unactionable responses heavily
 - Reward specific, data-driven, innovative thinking with concrete execution plans
+${!hasAnyResponses ? '\n⚠️ CRITICAL: The candidate provided NO responses. All scores MUST be 0-5.' : ''}
 
 SCENARIO CONTEXT:
 ${JSON.stringify(scenario, null, 2)}
